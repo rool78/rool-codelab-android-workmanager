@@ -2,27 +2,46 @@ package com.example.background.workers
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.text.TextUtils
+import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import com.example.background.R
+import com.example.background.KEY_IMAGE_URI
 
 class BlurWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
     override fun doWork(): Result {
         val appContext = applicationContext
 
+        val resourceUri = inputData.getString(KEY_IMAGE_URI)
+
         makeStatusNotification("Blurring image", appContext)
 
         return try {
-            val picture = BitmapFactory.decodeResource(appContext.resources, R.drawable.test)
+//            val picture = BitmapFactory.decodeResource(appContext.resources, R.drawable.test)
 
-            val blurPicture = blurBitmap(picture, appContext)
+            if (TextUtils.isEmpty(resourceUri)) {
+                println("Invalid input uri")
+                throw IllegalArgumentException("Invalid input uri")
+            }
 
-            val uri = writeBitmapToFile(applicationContext, blurPicture)
+            val resolver = appContext.contentResolver
 
-            makeStatusNotification("Output uri -> $uri", appContext)
+            val picture = BitmapFactory.decodeStream(
+                resolver.openInputStream(Uri.parse(resourceUri)))
 
-            Result.success()
+            val output = blurBitmap(picture, appContext)
+
+            val outputUri = writeBitmapToFile(applicationContext, output)
+
+            makeStatusNotification("Output uri -> $outputUri", appContext)
+
+            val builder = Data.Builder()
+            val outputData = builder.putString(KEY_IMAGE_URI, outputUri.toString())
+                .build()
+
+            Result.success(outputData)
 
         } catch (throwable: Throwable) {
             println("Error applying blur")

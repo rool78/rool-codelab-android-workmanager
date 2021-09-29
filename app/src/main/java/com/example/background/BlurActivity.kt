@@ -16,6 +16,7 @@
 
 package com.example.background
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
@@ -35,6 +36,11 @@ class BlurActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBlurBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val selectedImage = intent.getStringExtra(KEY_IMAGE_URI)
+        println("???? blurActivity selectedImage $selectedImage")
+
+        binding.imageView.setImageURI(Uri.parse(selectedImage))
 
         binding.goButton.setOnClickListener { viewModel.applyBlur(blurLevel) }
     }
