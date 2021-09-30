@@ -18,6 +18,8 @@ class BlurWorker(ctx: Context, params: WorkerParameters) : Worker(ctx, params) {
 
         makeStatusNotification("Blurring image", appContext)
 
+        sleep()
+
         return try {
 //            val picture = BitmapFactory.decodeResource(appContext.resources, R.drawable.test)
 
